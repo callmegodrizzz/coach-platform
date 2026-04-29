@@ -2,28 +2,23 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// Middleware: проверяет JWT-токен из заголовка Authorization
 function authenticate(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
 
-    // Ожидаем заголовок вида "Authorization: Bearer eyJhbGc..."
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    const token = authHeader.substring(7); // убираем "Bearer "
-
-    // Проверяем подпись и срок действия
+    const token = authHeader.substring(7);
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    // Кладём данные юзера в req — следующий контроллер их получит
     req.user = {
       userId: decoded.userId,
       role: decoded.role
     };
 
-    next(); // пропускаем дальше
+    next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({ error: 'Token expired' });
@@ -32,4 +27,11 @@ function authenticate(req, res, next) {
   }
 }
 
-module.exports = { authenticate };
+function requireAdmin(req, res, next) {
+  if (!req.user || req.user.role !== 'ADMIN') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+}
+
+module.exports = { authenticate, requireAdmin };

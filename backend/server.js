@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const authRoutes = require('./src/routes/authRoutes');
+const moduleRoutes = require('./src/routes/moduleRoutes');
 
 const app = express();
 const PORT = 3000;
@@ -9,7 +10,7 @@ const PORT = 3000;
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.json({ message: 'Coach Platform API is running 🚀' });
+  res.json({ message: 'Coach Platform API is running' });
 });
 
 app.get('/api/health', (req, res) => {
@@ -20,7 +21,8 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/modules', moduleRoutes);
 
 app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
+  console.log('Server running on http://localhost:' + PORT);
 });
