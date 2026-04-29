@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const authRoutes = require('./src/routes/authRoutes');
 const moduleRoutes = require('./src/routes/moduleRoutes');
+const lessonRoutes = require('./src/routes/lessonRoutes');
 
 const app = express();
 const PORT = 3000;
@@ -22,6 +23,7 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/modules', moduleRoutes);
+app.use('/api/lessons', lessonRoutes);
 
 app.listen(PORT, () => {
   console.log('Server running on http://localhost:' + PORT);
