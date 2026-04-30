@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Цвета MATERIUM */
+  --color-cream: #F5F1EA;
+  --color-ink: #0E0E0E;
+  --color-accent: #FF4F1F;
+  --color-accent-soft: #FF6B3D;
+  --color-magenta: #E91E63;
+  --color-emerald: #1B5E3F;
+  --color-burgundy: #8B1538;
+
+  /* Шрифты */
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-manrope);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-inter);
+  background: #F5F1EA;
+  color: #0E0E0E;
+}
+
+/* Утилитарные классы для типографики MATERIUM */
+.font-display {
+  font-family: var(--font-manrope);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+}
+
+.font-display-uppercase {
+  font-family: var(--font-manrope);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+/* Скрываем стандартные стили скроллбара для красоты */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(14, 14, 14, 0.2);
+  border-radius: 4px;
+}
