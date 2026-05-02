@@ -9,11 +9,16 @@ const progressRoutes = require('./src/routes/progressRoutes');
 const assignmentRoutes = require('./src/routes/assignmentRoutes');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// Разрешаем запросы с фронта
 app.use(cors({
-  origin: ['http://localhost:3001', 'http://localhost:3000'],
+  origin: [
+    'http://localhost:3001',
+    'http://localhost:3000',
+    'https://coach-platform-seven.vercel.app',
+    'https://coach-platform-hquhrr5tc-callmegodrizzzs-projects.vercel.app',
+    /\.vercel\.app$/,
+  ],
   credentials: true,
 }));
 
