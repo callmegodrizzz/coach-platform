@@ -4,7 +4,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { palette, radius, space, subjectPalette, type } from '@/theme/tokens';
 import { useTheme } from '@/theme/ThemeProvider';
 import { SUBJECTS, SUBJECT_BY_ID, type SubjectId } from '@/data/schedule';
-import { addDays, formatRelative, nextLessonFor, today, type ISODate } from '@/lib/dates';
+import {
+  addDays,
+  formatRelative,
+  lessonChipLabel,
+  nextLessonFor,
+  nextLessonsFor,
+  today,
+  type ISODate,
+} from '@/lib/dates';
 import { useStore, type ItemKind, type NewItem } from '@/lib/store';
 import * as haptics from '@/lib/haptics';
 import { Sheet } from './Sheet';
@@ -25,6 +33,13 @@ type Props = {
 };
 
 type Mode = 'compose' | 'due' | 'plan';
+
+type DateOption = { value: ISODate; label: string };
+
+const DEFAULT_DATE_OPTIONS = (): DateOption[] => [
+  { value: today(), label: 'Сегодня' },
+  { value: addDays(today(), 1), label: 'Завтра' },
+];
 
 /**
  * Быстрое добавление. Одна строка + чипы, клавиатура не закрывается.
@@ -74,6 +89,22 @@ export function QuickAddSheet({ visible, preset, onClose }: Props) {
       if (lesson) setDueAt(lesson.date);
     }
   };
+
+  /**
+   * Домашку сдают к паре, поэтому при выбранном предмете «Сдать» предлагает
+   * его ближайшие занятия, а не произвольные даты.
+   */
+  const dueOptions = useMemo<DateOption[]>(() => {
+    if (kind === 'homework' && subjectId) {
+      const lessons = nextLessonsFor(subjectId, 5);
+      if (lessons.length) {
+        return lessons.map((l, i) => ({ value: l.date, label: lessonChipLabel(i, l.date) }));
+      }
+    }
+    return DEFAULT_DATE_OPTIONS();
+  }, [kind, subjectId]);
+
+  const planOptions = useMemo<DateOption[]>(() => DEFAULT_DATE_OPTIONS(), []);
 
   const canSave = title.trim().length > 0;
 
@@ -184,6 +215,7 @@ export function QuickAddSheet({ visible, preset, onClose }: Props) {
               label="Сдать"
               value={dueAt}
               accent={accent}
+              options={dueOptions}
               onQuick={(d) => setDueAt(d)}
               onOpen={() => setMode('due')}
             />
@@ -192,6 +224,7 @@ export function QuickAddSheet({ visible, preset, onClose }: Props) {
               label="Делать"
               value={plannedFor}
               accent={accent}
+              options={planOptions}
               onQuick={(d) => setPlannedFor(d)}
               onOpen={() => setMode('plan')}
             />
@@ -216,6 +249,7 @@ function DateRow({
   label,
   value,
   accent,
+  options,
   onQuick,
   onOpen,
 }: {
@@ -223,10 +257,14 @@ function DateRow({
   label: string;
   value?: ISODate;
   accent: string;
+  options: DateOption[];
   onQuick: (d: ISODate) => void;
   onOpen: () => void;
 }) {
   const { c } = useTheme();
+  // Календарь подсвечен, только если выбранной даты нет среди быстрых вариантов.
+  const custom = value !== undefined && !options.some((o) => o.value === value);
+
   return (
     <View style={styles.dateRow}>
       <View style={styles.dateLabel}>
@@ -240,44 +278,30 @@ function DateRow({
         keyboardShouldPersistTaps="always"
         contentContainerStyle={styles.dateChips}
       >
-        <QuickDate label="Сегодня" active={value === today()} onPress={() => onQuick(today())} accent={accent} />
-        <QuickDate
-          label="Завтра"
-          active={value === addDays(today(), 1)}
-          onPress={() => onQuick(addDays(today(), 1))}
-          accent={accent}
-        />
+        {options.map((o) => (
+          <QuickDate
+            key={o.value}
+            label={o.label}
+            active={value === o.value}
+            onPress={() => onQuick(o.value)}
+            accent={accent}
+          />
+        ))}
+
         <Pressable
           onPress={() => {
             haptics.select();
             onOpen();
           }}
-          style={[
-            styles.dateChip,
-            {
-              backgroundColor: value && value !== today() && value !== addDays(today(), 1) ? accent : c.surfaceAlt,
-            },
-          ]}
+          style={[styles.dateChip, { backgroundColor: custom ? accent : c.surfaceAlt }]}
         >
           <Ionicons
             name="calendar-outline"
             size={14}
-            color={value && value !== today() && value !== addDays(today(), 1) ? '#FFFFFF' : c.textMuted}
+            color={custom ? '#FFFFFF' : c.textMuted}
           />
-          <Text
-            style={[
-              type.caption,
-              {
-                color:
-                  value && value !== today() && value !== addDays(today(), 1)
-                    ? '#FFFFFF'
-                    : c.textMuted,
-              },
-            ]}
-          >
-            {value && value !== today() && value !== addDays(today(), 1)
-              ? formatRelative(value)
-              : 'Дата'}
+          <Text style={[type.caption, { color: custom ? '#FFFFFF' : c.textMuted }]}>
+            {custom ? formatRelative(value) : 'Дата'}
           </Text>
         </Pressable>
       </ScrollView>

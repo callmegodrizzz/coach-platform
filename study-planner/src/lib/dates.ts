@@ -133,6 +133,36 @@ export function plural(n: number, one: string, few: string, many: string): strin
   return `${n} ${word}`;
 }
 
+/**
+ * Ближайшие пары по предмету — на них вешаются дедлайны домашки.
+ * Домашку почти всегда сдают к занятию, а не к произвольной дате,
+ * поэтому это основной способ выбрать срок.
+ */
+export function nextLessonsFor(
+  subjectId: string,
+  count = 5,
+  from: ISODate = today(),
+): { date: ISODate; lesson: Lesson }[] {
+  const out: { date: ISODate; lesson: Lesson }[] = [];
+  for (let i = 0; i < 60 && out.length < count; i++) {
+    const date = addDays(from, i);
+    const lesson = lessonsOn(date).find((l) => l.subjectId === subjectId);
+    if (!lesson) continue;
+    // Сегодняшняя пара считается, только если она ещё не началась.
+    if (i === 0 && lessonStartsAt(date, lesson.slot).getTime() <= Date.now()) continue;
+    out.push({ date, lesson });
+  }
+  return out;
+}
+
+/** Подпись чипа дедлайна: «След. пара, ср 9» → «Через пару, пт 11» → «Ср 16». */
+export function lessonChipLabel(index: number, date: ISODate): string {
+  const short = `${weekdayShort(date).toLowerCase()} ${fromISO(date).getDate()}`;
+  if (index === 0) return `След. пара, ${short}`;
+  if (index === 1) return `Через пару, ${short}`;
+  return short.charAt(0).toUpperCase() + short.slice(1);
+}
+
 /** Ближайшая дата (начиная с завтрашнего дня), когда есть пара по предмету. */
 export function nextLessonFor(subjectId: string, from: ISODate = today()): { date: ISODate; lesson: Lesson } | null {
   for (let i = 0; i < 21; i++) {
