@@ -109,7 +109,6 @@ Xcode → Settings → Accounts: добавить свой Apple ID и выбр�
 ```bash
 npm start              # Metro
 npm run typecheck      # проверка типов
-npx tsc --noEmit       # проверка типов
 npx expo export --platform ios --output-dir /tmp/x   # проверка сборки бандла
 ```
 
