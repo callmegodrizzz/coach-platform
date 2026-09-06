@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -46,6 +46,14 @@ export default function ScheduleScreen() {
   const [addVisible, setAddVisible] = useState(false);
   const [preset, setPreset] = useState<QuickAddPreset | undefined>();
 
+  // Экран живёт открытым часами, поэтому «СЕЙЧАС» и подписи дедлайнов
+  // приходится пересчитывать по таймеру, иначе они застывают.
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNowMs(Date.now()), 30_000);
+    return () => clearInterval(timer);
+  }, []);
+
   const monday = mondayOf(selected);
   const lessons = lessonsOn(selected);
   const weekType = weekTypeOf(selected);
@@ -76,8 +84,6 @@ export default function ScheduleScreen() {
     setPreset(p);
     setAddVisible(true);
   };
-
-  const nowMs = Date.now();
 
   return (
     <View style={[styles.root, { backgroundColor: c.bg }]}>
