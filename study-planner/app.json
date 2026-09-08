@@ -15,10 +15,7 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.godrizzz.planer",
-      "infoPlist": {
-        "UIBackgroundModes": ["remote-notification"]
-      }
+      "bundleIdentifier": "com.godrizzz.planer"
     },
     "android": {
       "package": "com.godrizzz.planer",
